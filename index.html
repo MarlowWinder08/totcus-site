@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOTCUS — The Ocean That Connects Us</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --deep:#04111f; --ocean:#0a2540; --mid:#0e4272; --teal:#0d7e7e;
+    --aqua:#17b8b8; --foam:#a8f0e8; --sand:#f2e8d5; --gold:#c9974a;
+    --text:#e8f4f8; --muted:#8ab4c8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--deep);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden}
+
+  /* BG */
+  .ocean-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .wave-layer{position:absolute;width:200%;height:100%;
+    background:radial-gradient(ellipse 80% 60% at 50% 100%,#0d3a5c44,transparent),
+               radial-gradient(ellipse 60% 40% at 20% 80%,#0a627044,transparent),
+               radial-gradient(ellipse 50% 50% at 80% 60%,#17b8b811,transparent);
+    animation:drift 18s ease-in-out infinite alternate}
+  .wave-layer:nth-child(2){
+    background:radial-gradient(ellipse 70% 50% at 70% 90%,#0e427244,transparent),
+               radial-gradient(ellipse 40% 30% at 10% 60%,#0d7e7e22,transparent);
+    animation-duration:25s;animation-direction:alternate-reverse}
+  @keyframes drift{from{transform:translateX(0) translateY(0)}to{transform:translateX(-8%) translateY(2%)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{to{opacity:1}}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;
+    justify-content:space-between;padding:18px 48px;
+    background:linear-gradient(to bottom,rgba(4,17,31,0.95),transparent);
+    backdrop-filter:blur(12px);border-bottom:1px solid rgba(23,184,184,0.1)}
+  .nav-logo{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;
+    letter-spacing:0.15em;color:var(--aqua);text-decoration:none}
+  .nav-logo span{color:var(--sand)}
+  .nav-links{display:flex;gap:28px;list-style:none}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;font-weight:500;
+    letter-spacing:0.05em;text-transform:uppercase;transition:color 0.2s;position:relative}
+  .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;
+    height:1px;background:var(--aqua);transform:scaleX(0);transition:transform 0.2s}
+  .nav-links a:hover{color:var(--aqua)}
+  .nav-links a:hover::after{transform:scaleX(1)}
+  .nav-cta{border:1px solid var(--aqua) !important;padding:8px 20px;border-radius:2px}
+  .nav-cta::after{display:none !important}
+  .nav-cta:hover{background:var(--aqua) !important;color:var(--deep) !important}
+
+  /* HERO — two column */
+  .hero{position:relative;z-index:1;min-height:100vh;display:grid;
+    grid-template-columns:1fr 1fr;align-items:center;
+    padding:120px 80px 80px;gap:56px;overflow:hidden}
+  .hero::before{content:'';position:absolute;inset:0;
+    background:radial-gradient(ellipse 120% 80% at 100% 60%,rgba(13,126,126,0.12),transparent 60%),
+               radial-gradient(ellipse 60% 100% at 0% 100%,rgba(14,66,114,0.3),transparent 60%)}
+  .hero-left{position:relative;z-index:2}
+  .hero-tag{font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.25em;
+    color:var(--aqua);text-transform:uppercase;margin-bottom:24px;
+    opacity:0;animation:fadeUp 0.8s 0.2s forwards}
+  .hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.8rem,5.5vw,6rem);
+    font-weight:900;line-height:0.95;letter-spacing:-0.02em;margin-bottom:12px;
+    opacity:0;animation:fadeUp 0.8s 0.4s forwards}
+  .hero-title .accent{color:var(--aqua);font-style:italic}
+  .hero-subtitle-maori{font-family:'Playfair Display',serif;font-style:italic;
+    font-size:clamp(1rem,2vw,1.4rem);color:var(--muted);margin-bottom:28px;
+    opacity:0;animation:fadeUp 0.8s 0.6s forwards}
+  .hero-desc{max-width:520px;font-size:1rem;line-height:1.75;color:var(--foam);
+    opacity:0;animation:fadeUp 0.8s 0.8s forwards;margin-bottom:40px}
+  .hero-actions{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp 0.8s 1s forwards}
+
+  /* Hero photo mosaic */
+  .hero-right{position:relative;z-index:2;display:grid;
+    grid-template-columns:1fr 1fr;grid-template-rows:260px 200px;gap:10px;
+    opacity:0;animation:fadeIn 1.2s 0.6s forwards}
+  .hero-photo{overflow:hidden;position:relative;background:rgba(14,66,114,0.3)}
+  .hero-photo img{width:100%;height:100%;object-fit:cover;
+    filter:brightness(0.82) saturate(0.9);transition:transform 0.6s ease,filter 0.4s}
+  .hero-photo:hover img{transform:scale(1.05);filter:brightness(1) saturate(1.1)}
+  .hero-photo.tall{grid-row:span 2}
+  .hero-photo-label{position:absolute;bottom:0;left:0;right:0;
+    background:linear-gradient(to top,rgba(4,17,31,0.85),transparent);
+    padding:20px 14px 10px;font-size:0.68rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--foam);font-family:'Space Mono',monospace;
+    opacity:0;transition:opacity 0.3s}
+  .hero-photo:hover .hero-photo-label{opacity:1}
+
+  /* Buttons */
+  .btn-primary{background:var(--aqua);color:var(--deep);padding:14px 32px;
+    font-family:'Space Mono',monospace;font-size:0.8rem;letter-spacing:0.1em;
+    text-transform:uppercase;text-decoration:none;font-weight:700;border:none;
+    cursor:pointer;transition:background 0.2s,transform 0.2s;display:inline-block}
+  .btn-primary:hover{background:var(--foam);transform:translateY(-2px)}
+  .btn-outline{background:transparent;color:var(--text);padding:14px 32px;
+    font-family:'Space Mono',monospace;font-size:0.8rem;letter-spacing:0.1em;
+    text-transform:uppercase;text-decoration:none;
+    border:1px solid rgba(255,255,255,0.25);
+    transition:border-color 0.2s,color 0.2s;display:inline-block}
+  .btn-outline:hover{border-color:var(--aqua);color:var(--aqua)}
+
+  /* Stats */
+  .stats-bar{position:relative;z-index:1;background:rgba(14,66,114,0.3);
+    border-top:1px solid rgba(23,184,184,0.15);border-bottom:1px solid rgba(23,184,184,0.15);
+    backdrop-filter:blur(8px);display:flex;justify-content:center}
+  .stat{padding:32px 64px;text-align:center;border-right:1px solid rgba(23,184,184,0.1)}
+  .stat:last-child{border-right:none}
+  .stat-number{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--aqua);line-height:1}
+  .stat-label{font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+  /* Alert */
+  .alert-banner{position:relative;z-index:1;
+    background:linear-gradient(135deg,rgba(201,151,74,0.15),rgba(201,151,74,0.05));
+    border-left:3px solid var(--gold);padding:20px 80px;
+    display:flex;align-items:center;gap:16px;font-size:0.9rem}
+  .alert-icon{font-size:1.2rem;flex-shrink:0;color:var(--gold)}
+  .alert-banner a{color:var(--gold);font-weight:500}
+  .alert-banner strong{color:var(--gold)}
+
+  /* Gallery strip */
+  .gallery-strip{position:relative;z-index:1;height:300px;display:flex;overflow:hidden;
+    border-top:1px solid rgba(23,184,184,0.08);border-bottom:1px solid rgba(23,184,184,0.08)}
+  .gallery-photo{flex:1;overflow:hidden;position:relative;cursor:pointer;transition:flex 0.5s ease}
+  .gallery-photo img{width:100%;height:100%;object-fit:cover;
+    filter:brightness(0.68) saturate(0.8);transition:transform 0.6s ease,filter 0.4s}
+  .gallery-photo:hover{flex:2.2}
+  .gallery-photo:hover img{filter:brightness(0.95) saturate(1.1);transform:scale(1.04)}
+  .gallery-caption{position:absolute;bottom:0;left:0;right:0;
+    background:linear-gradient(to top,rgba(4,17,31,0.9),transparent);
+    padding:28px 16px 12px;font-family:'Space Mono',monospace;font-size:0.65rem;
+    letter-spacing:0.12em;text-transform:uppercase;color:var(--foam);
+    opacity:0;transition:opacity 0.3s}
+  .gallery-photo:hover .gallery-caption{opacity:1}
+
+  /* Sections */
+  section{position:relative;z-index:1;padding:96px 80px}
+  .section-tag{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.3em;
+    text-transform:uppercase;color:var(--aqua);margin-bottom:16px}
+  .section-title{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3.2rem);
+    font-weight:700;line-height:1.15;margin-bottom:24px}
+  .section-body{font-size:1rem;line-height:1.8;color:var(--foam);max-width:680px}
+
+  /* Pillars */
+  .pillars{background:rgba(10,37,64,0.5);border-top:1px solid rgba(23,184,184,0.08)}
+  .pillars-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:64px}
+  .pillar{background:rgba(4,17,31,0.6);padding:40px 32px;
+    border:1px solid rgba(23,184,184,0.08);position:relative;overflow:hidden;
+    transition:border-color 0.3s,transform 0.3s;
+    text-decoration:none;color:inherit;display:block;cursor:pointer}
+  .pillar:hover{border-color:rgba(23,184,184,0.4);transform:translateY(-4px)}
+  .pillar::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+    background:linear-gradient(to right,var(--aqua),transparent);
+    transform:scaleX(0);transform-origin:left;transition:transform 0.4s}
+  .pillar:hover::before{transform:scaleX(1)}
+  .pillar-icon{font-size:2rem;margin-bottom:20px;display:block}
+  .pillar-number{font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;color:var(--teal);margin-bottom:12px}
+  .pillar-name{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;margin-bottom:12px}
+  .pillar-desc{font-size:0.85rem;color:var(--muted);line-height:1.65}
+
+  /* Updates */
+  .updates{border-top:1px solid rgba(23,184,184,0.08)}
+  .updates-grid{display:grid;grid-template-columns:2fr 1fr;gap:64px;margin-top:56px}
+  .update-card{background:rgba(14,66,114,0.18);border:1px solid rgba(23,184,184,0.1);
+    padding:32px;margin-bottom:16px;position:relative;overflow:hidden;transition:border-color 0.3s}
+  .update-card:hover{border-color:rgba(23,184,184,0.3)}
+  .update-card::after{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--aqua);opacity:0.4}
+  .update-date{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;color:var(--aqua);margin-bottom:8px}
+  .update-title{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:8px}
+  .update-text{font-size:0.88rem;color:var(--muted);line-height:1.65}
+  .symposium-box{background:linear-gradient(135deg,rgba(13,126,126,0.15),rgba(14,66,114,0.2));
+    border:1px solid rgba(13,126,126,0.3);padding:32px;position:sticky;top:96px}
+  .symposium-box h3{font-family:'Playfair Display',serif;font-size:1.3rem;margin-bottom:20px;color:var(--aqua)}
+  .sym-date{padding:12px 0;border-bottom:1px solid rgba(23,184,184,0.1);font-size:0.85rem;line-height:1.5}
+  .sym-date:last-of-type{border-bottom:none}
+  .sym-date strong{display:block;color:var(--foam);font-weight:500}
+  .sym-date span{color:var(--muted);font-size:0.78rem}
+
+  /* In Action photos */
+  .in-action{border-top:1px solid rgba(23,184,184,0.08)}
+  .action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:48px}
+  .action-photo{position:relative;overflow:hidden;background:rgba(14,66,114,0.2)}
+  .action-photo img{width:100%;height:240px;object-fit:cover;
+    filter:brightness(0.78) saturate(0.85);transition:transform 0.5s,filter 0.4s;display:block}
+  .action-photo:hover img{transform:scale(1.06);filter:brightness(0.95) saturate(1.1)}
+  .action-photo.wide{grid-column:span 2}
+  .action-photo.wide img{height:300px}
+  .action-caption{position:absolute;bottom:0;left:0;right:0;
+    background:linear-gradient(to top,rgba(4,17,31,0.88),transparent);
+    padding:28px 16px 12px;font-family:'Space Mono',monospace;font-size:0.65rem;
+    letter-spacing:0.1em;text-transform:uppercase;color:var(--foam)}
+
+  /* About */
+  .about{background:rgba(10,37,64,0.3);border-top:1px solid rgba(23,184,184,0.08)}
+  .about-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+  .timeline{margin-top:48px;position:relative}
+  .timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:1px;
+    background:linear-gradient(to bottom,var(--aqua),transparent)}
+  .tl-item{padding-left:40px;margin-bottom:32px;position:relative}
+  .tl-item::before{content:'';position:absolute;left:7px;top:6px;width:11px;height:11px;
+    border-radius:50%;border:2px solid var(--aqua);background:var(--deep)}
+  .tl-year{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.15em;color:var(--aqua);margin-bottom:4px}
+  .tl-text{font-size:0.9rem;color:var(--muted);line-height:1.6}
+  .bilingual{background:rgba(14,66,114,0.15);border:1px solid rgba(23,184,184,0.1);
+    padding:40px;margin-top:40px;font-size:0.9rem;color:var(--muted);line-height:1.75;font-style:italic}
+
+  /* Collaborators */
+  .collabs{border-top:1px solid rgba(23,184,184,0.08)}
+  .regions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+  .region-card{border:1px solid rgba(23,184,184,0.12);padding:24px;
+    transition:border-color 0.3s,background 0.3s;text-decoration:none;color:inherit;display:block}
+  .region-card:hover{border-color:rgba(23,184,184,0.35);background:rgba(14,66,114,0.15)}
+  .region-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:8px}
+  .region-count{font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--aqua);letter-spacing:0.1em}
+
+  /* Quote */
+  .quote-section{background:linear-gradient(135deg,rgba(13,126,126,0.08),rgba(14,66,114,0.12));
+    border-top:1px solid rgba(23,184,184,0.08);border-bottom:1px solid rgba(23,184,184,0.08);
+    text-align:center;padding:80px;position:relative;z-index:1}
+  blockquote{font-family:'Playfair Display',serif;font-style:italic;
+    font-size:clamp(1.3rem,2.5vw,2rem);line-height:1.5;color:var(--foam);max-width:800px;margin:0 auto 20px}
+  cite{font-family:'Space Mono',monospace;font-style:normal;font-size:0.75rem;
+    letter-spacing:0.15em;color:var(--aqua);text-transform:uppercase}
+
+  /* Nav guide */
+  .nav-guide{border-top:1px solid rgba(23,184,184,0.08)}
+  .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px}
+  .step{padding:28px;background:rgba(4,17,31,0.5);border:1px solid rgba(23,184,184,0.08);transition:border-color 0.3s}
+  .step:hover{border-color:rgba(23,184,184,0.25)}
+  .step-num{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:rgba(23,184,184,0.2);margin-bottom:12px}
+  .step-title{font-weight:500;font-size:0.95rem;margin-bottom:8px;color:var(--foam)}
+  .step-text{font-size:0.82rem;color:var(--muted);line-height:1.6}
+  .step-text a{color:var(--aqua)}
+
+  /* Footer */
+  footer{position:relative;z-index:1;background:rgba(4,17,31,0.95);
+    border-top:1px solid rgba(23,184,184,0.1);padding:48px 80px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
+  .footer-brand{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--aqua);letter-spacing:0.15em}
+  .footer-text{font-size:0.8rem;color:var(--muted)}
+  .footer-email{font-family:'Space Mono',monospace;font-size:0.8rem;color:var(--aqua);
+    text-decoration:none;border:1px solid rgba(23,184,184,0.3);padding:10px 20px;transition:background 0.2s}
+  .footer-email:hover{background:rgba(23,184,184,0.1)}
+
+  /* Responsive */
+  @media(max-width:1100px){
+    .hero{grid-template-columns:1fr;padding:100px 40px 60px}
+    .hero-right{grid-template-columns:1fr 1fr;grid-template-rows:200px 160px}
+    nav{padding:16px 32px}
+    section{padding:64px 40px}
+    .pillars-grid{grid-template-columns:repeat(2,1fr)}
+    .updates-grid{grid-template-columns:1fr}
+    .about-inner{grid-template-columns:1fr}
+    .regions-grid{grid-template-columns:repeat(2,1fr)}
+    .steps-grid{grid-template-columns:repeat(2,1fr)}
+    .stat{padding:24px 32px}
+    footer{flex-direction:column;text-align:center}
+    .alert-banner{padding:16px 40px}
+  }
+  @media(max-width:640px){
+    nav{padding:14px 20px}
+    .nav-links{display:none}
+    .hero{padding:90px 24px 40px}
+    .hero-right{display:none}
+    section{padding:48px 24px}
+    .stats-bar{flex-direction:column}
+    .stat{border-right:none;border-bottom:1px solid rgba(23,184,184,0.1)}
+    .alert-banner{padding:16px 24px;flex-direction:column;align-items:flex-start}
+    .pillars-grid{grid-template-columns:1fr}
+    .regions-grid{grid-template-columns:1fr}
+    .steps-grid{grid-template-columns:1fr}
+    .action-grid{grid-template-columns:1fr}
+    .action-photo.wide{grid-column:span 1}
+    .action-photo.wide img{height:240px}
+    .gallery-strip{height:200px}
+    .quote-section{padding:48px 24px}
+    footer{padding:32px 24px}
+  }
+</style>
+</head>
+<body>
+
+<div class="ocean-canvas">
+  <div class="wave-layer"></div>
+  <div class="wave-layer"></div>
+</div>
+
+<!-- Navigation — all links point to real TOTCUS pages -->
+<nav>
+  <a href="https://sites.google.com/rosmini.school.nz/totcus/home" target="_blank" class="nav-logo">TOT<span>CUS</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="https://sites.google.com/rosmini.school.nz/totcus/knowledge" target="_blank">Knowledge</a></li>
+    <li><a href="https://sites.google.com/rosmini.school.nz/totcus/sharing" target="_blank">Sharing</a></li>
+    <li><a href="https://sites.google.com/rosmini.school.nz/totcus/action" target="_blank">Action</a></li>
+    <li><a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators" target="_blank">Collaborators</a></li>
+    <li><a href="mailto:totcus.project@gmail.com" class="nav-cta">Join Us</a></li>
+  </ul>
+</nav>
+
+<!-- Hero — text left, photo mosaic right -->
+<header class="hero">
+  <div class="hero-left">
+    <p class="hero-tag">// Global Student Climate Network</p>
+    <h1 class="hero-title">The Ocean<br>That <span class="accent">Connects</span><br>Us</h1>
+    <p class="hero-subtitle-maori">Te moana e hono i a tatou</p>
+    <p class="hero-desc">A Pacific-wide student collaboration network for climate education, research, and action. Connecting young people aged 10&ndash;18 across the globe to understand and address the climate crisis together.</p>
+    <div class="hero-actions">
+      <a href="#about" class="btn-primary">Explore the Project</a>
+      <a href="https://drive.google.com/file/d/1A_XLDUm_C9LV7PDdwVpl7e50IRWvRf_J/view?usp=sharing" target="_blank" class="btn-outline">Watch: What is TOTCUS?</a>
+    </div>
+  </div>
+
+  <!-- Photo mosaic using real images from the TOTCUS site -->
+  <div class="hero-right">
+    <div class="hero-photo tall">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUB6FnROI5bR2kZise062qiDOgt013pBaVoLKC82X9sZR05eY21j_JeL5ztleNykdxZrvTQsRPAkQPOQ2ukPhXTuNt2yq_r9pv1kGj2106Bi_KIMrBihimij0OmLGdiZB6T4yR1LqYdbkYtzHT36kSnQ17XO6WwET-wW3XdiOA7oXE6a6Xfu08QWdvYvmV3TWvJaZHdz_yAQwJy0VSIE=w1280" alt="Early TOTCUS collaboration" loading="lazy">
+      <div class="hero-photo-label">Auckland &harr; Punta Arenas</div>
+    </div>
+    <div class="hero-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUDXX3Fa0Xi-y4at9nVV_v4Mgk0NbljrDQoovDwYcybnqBc2HrcM4x-NHIXUxWEEF5e_lvIFE246CY4nlOAUoivFyTD60OYg5q6ISjC6IaIp2JUVVWYygXp3XOkKyp0CD8fRgILN-P67FpeyvosSYWSizL40eUdrcJMS4Hs_J8mONbNf281WzconsCvqHokNqVoW0RL9y0TA1auTD4GRPvl-GjORgS_SByVs=w1280" alt="TOTCUS student session" loading="lazy">
+      <div class="hero-photo-label">Student Sessions</div>
+    </div>
+    <div class="hero-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUDRegnecyIW0SaHSLfrB1bD-dcuAkKR4Go8zPJGFDlx4obEOMvOHLSPUbmqMkMtlhQ6ZBzDx_crpbhIfEyqgbdtKhUXg5HGysnmWPVLBDZyXhxpDEB9cjMreIa0us2qkTGmoAiKdZ4e-orfYHRuX_UjWCdYbaqaMpTURIy_k-C6xoyXNckced25ZKGNn8EsZNdgFG1Q7bDvrrmAmBmVuIVgcZCH2YKke9Se=w1280" alt="TOTCUS global collaboration" loading="lazy">
+      <div class="hero-photo-label">Global Collaboration</div>
+    </div>
+  </div>
+</header>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-number">250+</div><div class="stat-label">Students Collaborating</div></div>
+  <div class="stat"><div class="stat-number">20+</div><div class="stat-label">Countries</div></div>
+  <div class="stat"><div class="stat-number">2022</div><div class="stat-label">Founded</div></div>
+  <div class="stat"><div class="stat-number">4</div><div class="stat-label">Symposiums Held</div></div>
+</div>
+
+<!-- Alert -->
+<div class="alert-banner">
+  <span class="alert-icon">&#9674;</span>
+  <p><strong>Recent:</strong> TOTCUS featured at the Regional Earth Day Celebration, April 2026. &nbsp;|&nbsp;
+     European Citizen Science Association conference, Oulu, Finland, March 5. &nbsp;|&nbsp;
+     <a href="https://sites.google.com/rosmini.school.nz/totcus/home/earth-day-26-presentation" target="_blank">View the Earth Day 2026 presentation &rarr;</a></p>
+</div>
+
+<!-- Expanding gallery strip — hover to enlarge each photo -->
+<div class="gallery-strip">
+  <div class="gallery-photo">
+    <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUAsQH4kgTME7npI2v7H3-bUdTjy9IzQPXG-xBLjWa6RW33Q9481tecEqPWPffElv-zjVudjboo5BEcNdgbJgqb85q6tis1BsTrsx7roTsqAExNwx0f6mDwXX9yFoF7O0Er7RRVT3idudp5ENJdoxfV5tBqK7oCBM1Br1vltbWYrQFO3RiOqmAuiGgDDIzqajEheYEqNgx2UK6eRK6BmEkU66sTmCW6a3cl3a5Q=w1280" alt="Students" loading="lazy">
+    <div class="gallery-caption">Student Researchers</div>
+  </div>
+  <div class="gallery-photo">
+    <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUDlCDxEEop9G9QpACAHC-scIv-HEvlfnyzsdObPknvW3j6cnS3WGSCihPy2h2diOy3htxtXsFi70XDy4_wqBEbVVTgK2UeDLQ4WBwvMdfEYXcdUxryk6y_qj_Ws8i_tns_eyciGlH2MMsFV86_xYB9XGBpFCRH3xhC6VI2ibVYYRrtDJomqrp84_KMnSV7ZlHzjoqwiYgWD3az3jv2jc2xOOHVb5Wikb_Qx-yw=w1280" alt="Pacific Ocean" loading="lazy">
+    <div class="gallery-caption">The Pacific Ocean</div>
+  </div>
+  <div class="gallery-photo">
+    <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUDX4ykZQLi3CSw4iRhUHRdPtPHN1azOFlKSFTJfVv-pT9hS0MxNcjvUSCDUsZKhV9G-CNNPLxKBNkvzhRV2T8LJzmX3Ue8DBiZQzNNkpGF_5Yz6f24UvD_NtDYuLg4MjuOeNGgWy0cRtQ_-mI8q3cAuflAOIVQRSWTLXHSztR7W00DVvjaFpOmVAr9oiv5QRySQ0wzV4WPIRuLrpxbMdRo8Hir4YqSal3h1UkY=w1280" alt="Cross-cultural collaboration" loading="lazy">
+    <div class="gallery-caption">Cross-Cultural Collaboration</div>
+  </div>
+  <div class="gallery-photo">
+    <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUAm6_aBu9VbH7diJCmeioRfGhthePq9mkpGRHpTh8qlsGBOIkprVuapZ-KHCPNl8uMkY4Eiy39My6VpnMiEr7i8avy0Sfm3b4tlzpl3v8kLeKdjhZgGLBXRY4YMazWF673gxJRxlOUuAMSX47YIXAwops8LKcPhwQ4nFEjyO-eKmRTQOpDztmUUB2ryeGq1f7IybrDImryLPw_6DAQeyGWaadZDLV9i5xGsE7Y=w1280" alt="Field research" loading="lazy">
+    <div class="gallery-caption">Field Research</div>
+  </div>
+  <div class="gallery-photo">
+    <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUACkKNVXzqikTXIZAJeqNeTXG8jBhLlmt9w-zOMJ2hB_p8Wyr0WVWEN0dkLivPcAY7cGmeadTK-wN5fN2hzC6nmgX-2dmRX76mFTkVOmV3hq77JYCApA1ytr2h5l4D0Nxiz7JfzcGIoJiGL9w0KBgqYNVVRRI992H2OpInOn-WGAz4EaQE1VlWQPMpYt_f0fxo1_yBiXmGqTW99wgiAdVTGzPpWyUCyo8jWr9c=w1280" alt="Global community" loading="lazy">
+    <div class="gallery-caption">Global Community</div>
+  </div>
+</div>
+
+<!-- Pillars -->
+<section class="pillars" id="about">
+  <p class="section-tag">// How It Works</p>
+  <h2 class="section-title">Four Pillars of TOTCUS</h2>
+  <p class="section-body">Every student journey flows through four interconnected domains &mdash; from understanding the science to taking real action.</p>
+  <div class="pillars-grid">
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/home" target="_blank" class="pillar">
+      <span class="pillar-icon">&#127754;</span>
+      <p class="pillar-number">01 / HOME</p>
+      <h3 class="pillar-name">Start Here</h3>
+      <p class="pillar-desc">New to TOTCUS? This hub is your orientation. Learn the project, meet the community, and find teacher and student resources to get going.</p>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/knowledge" target="_blank" class="pillar">
+      <span class="pillar-icon">&#128218;</span>
+      <p class="pillar-number">02 / KNOWLEDGE</p>
+      <h3 class="pillar-name">Learn</h3>
+      <p class="pillar-desc">Over 100 climate-related resource pages covering atmosphere, biosphere, hydrosphere, indigenous knowledge, energy, health, and much more.</p>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/sharing" target="_blank" class="pillar">
+      <span class="pillar-icon">&#127758;</span>
+      <p class="pillar-number">03 / SHARING</p>
+      <h3 class="pillar-name">Share</h3>
+      <p class="pillar-desc">Student presentations, newsletters, and symposium recordings. See what schools around the world are discovering and creating.</p>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/action" target="_blank" class="pillar">
+      <span class="pillar-icon">&#9889;</span>
+      <p class="pillar-number">04 / ACTION</p>
+      <h3 class="pillar-name">Act</h3>
+      <p class="pillar-desc">Live field research and real-world projects: water quality monitoring, microplastics studies, infrastructure analysis, and more.</p>
+    </a>
+  </div>
+</section>
+
+<!-- Updates + Symposium -->
+<section class="updates" id="updates">
+  <p class="section-tag">// What's New</p>
+  <h2 class="section-title">Latest Updates &amp; 2026 Symposiums</h2>
+  <div class="updates-grid">
+    <div>
+      <div class="update-card">
+        <p class="update-date">April 2026</p>
+        <h3 class="update-title">Earth Day 2026 &mdash; Regional Dialogue</h3>
+        <p class="update-text">TOTCUS took centre stage at the Regional Earth Day Celebration. <a href="https://sites.google.com/rosmini.school.nz/totcus/home/earth-day-26-presentation" target="_blank" style="color:var(--aqua)">View the full presentation &rarr;</a></p>
+      </div>
+      <div class="update-card">
+        <p class="update-date">March 2026</p>
+        <h3 class="update-title">European Citizen Science Association Conference</h3>
+        <p class="update-text">Ms Veronica Kenny presented at the annual conference in Oulu, Finland, alongside Mr Wood and several TOTCUS students.</p>
+      </div>
+      <div class="update-card">
+        <p class="update-date">2026 Goals</p>
+        <h3 class="update-title">What's Growing This Year</h3>
+        <p class="update-text">More schools, more groups, more topics, and a new poster presentation format so mature projects can be shared at professional and community events. TOTCUS Science expert meetups also planned.</p>
+      </div>
+    </div>
+    <div>
+      <div class="symposium-box">
+        <h3>2026 Symposium Dates</h3>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">All times in NZT (NZST)</p>
+        <div class="sym-date"><strong>May 20 &mdash; 7:30&ndash;10:00 am</strong><span>For Americas &amp; Eastern Pacific (May 19)</span></div>
+        <div class="sym-date"><strong>May 20 &mdash; 6:00&ndash;8:00 pm</strong><span>For Africa, Europe, South &amp; East Asia</span></div>
+        <div class="sym-date"><strong>December 1 &mdash; 6:00&ndash;8:00 pm</strong><span>For Africa, Europe, South &amp; East Asia</span></div>
+        <div class="sym-date"><strong>December 4 &mdash; 9:00 am&ndash;1:00 pm</strong><span>For Americas &amp; Eastern Pacific</span></div>
+        <a href="mailto:totcus.project@gmail.com" class="btn-primary" style="display:block;text-align:center;margin-top:24px;font-size:0.75rem;">Register Your School</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- In Action photos -->
+<section class="in-action">
+  <p class="section-tag">// The Project in Action</p>
+  <h2 class="section-title">Students at Work</h2>
+  <p class="section-body">From water quality sampling to cross-Pacific video calls, TOTCUS students are doing real science and building real connections.</p>
+  <div class="action-grid">
+    <div class="action-photo wide">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUDS8G5aRxdWTJD9HCL5aYX0sy-Dpiu7H6PiM07_I5U1D0kyYLYehvr4f8P_6a2Bll6OjoQJMZFVp120FByLh4-38Ml67Fzb4OCOfq81ZruX-9DMzHHoNGPxHgxuc4DI8BsZy5IKs-s6xc9uiIMG1SMuwGKMwVPzmPJ8sIRh9HC6rATttOe8Z5R4TTNa71XMx7FkpU2J_Pl-95hvkFxy-2cov7VtKMknHvzMCUX8=w1280" alt="What is your climate journey?" loading="lazy">
+      <div class="action-caption">What's your climate journey?</div>
+    </div>
+    <div class="action-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUBP2YCQ5mB6-b3iMuZ4E2DXgSg5_wAAgA-2ktju7QYRCtoql-fqGNmeNFoc1OHOc0sJn1q-rkWj5bAgjEFcRxC24VwWISy_pX1tX62tNvnkqSB6btfOjV8lnnieqSTX5oAOhnV-GHAGeBoiE88a5THU2vDJQuV12TyrN-nxqVO_FdIeRILXTPgtewlGMazFYRz-YP5Ik3rNAOZsn_KfwjTIBmosWPQn=w1280" alt="Climate community" loading="lazy">
+      <div class="action-caption">Community &amp; Knowledge</div>
+    </div>
+    <div class="action-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUBZaM684n8g1zQw0nx5Bu61CXZbZIREK8rh9QRiAmwCryve-wxRfdwGqJCykc0TNkkL4HCjmKEP-xCoHLJvPkfFHa7q7ojRg5h_T4qqC-9YplWBlqahEXyaa9iDJ5gGNFwkyveTq7sJtNuhkcCnt9YeIg8j0PScHFXlQ2hv3qjxpgZxABVdZthjydU2-55xj7qRvjJMxFMUhBCmbg_8kioHG_1XlrP35q-q85w=w1280" alt="Symposium presentation" loading="lazy">
+      <div class="action-caption">Symposium Presentations</div>
+    </div>
+    <div class="action-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUAOY1Kje7RnSBhFDsiQYKrwng5EIFo9I5shF6UQDCMuofeyDK7s7KJgat7t653_BFLldUKvKV4WbobqAQdnIamkltS6KX90xhjTuKEDLAKoAk3hyioCGEoxhK5QDDZr7uVw1NcbBhuOkwoCb6XDZnlNdCviu3YwfrKrkzTbhqOqlQ1B-KfaLM1st81KtQ1ymPESaixGvj3ZF_cl-cw=w1280" alt="Climate data" loading="lazy">
+      <div class="action-caption">Data &amp; Research</div>
+    </div>
+    <div class="action-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUAKZ1pS7HxFPYVK3H8C7csRAv0JSWMCrm3lxZJ5wNtcqoYkSqSRPbY5cbHHjMAl2gKPXAJax4ZD7bNPgn2sIDpFbubXPDMKXD5GOq29mqrYVIcieDr_fb3Yzo12zPFhkx6rTrsXhAaFENfuSzKdtnTQqqevOovRtCYuk2FkTPJVA4_Xxo5L0vbB16pM2obYBMtyA_G4wjx8jej0XYSXy4J09AuOJ_Wbx6oT=w1280" alt="Taking action" loading="lazy">
+      <div class="action-caption">Taking Action</div>
+    </div>
+    <div class="action-photo">
+      <img src="https://lh3.googleusercontent.com/sitesv/AA5AbUBeY-GtBD3FquRI1yrINgxVnWNsOy8z0i8_Mdn0PxjArF5OsETI5aLx8F27hYH2JrZ9M1rX21LCuGXpYPhSzER8Jd3TFw_nps0IKxe9BAw0NqPdZaOl4z821XBdMZ8oHuNaOWq4cM1NJo8nBMteoDattSthwIm25iA7RT-uYATu0Mc46mmlgYYRZifHcGEaw439eKmsv4pRcg9-DoVhhcV2UWbG7lxfSIuzJfA=w1280" alt="Collaborative learning" loading="lazy">
+      <div class="action-caption">Collaborative Learning</div>
+    </div>
+  </div>
+</section>
+
+<!-- Quote -->
+<div class="quote-section">
+  <blockquote>&ldquo;We are the first generation to feel the impact of climate change and the last generation that can do something about it.&rdquo;</blockquote>
+  <cite>&mdash; Barack Obama</cite>
+</div>
+
+<!-- About / History -->
+<section class="about" id="history">
+  <div class="about-inner">
+    <div>
+      <p class="section-tag">// Project History</p>
+      <h2 class="section-title">From Two Schools<br>to the World</h2>
+      <p class="section-body">What started as a pilot connecting New Zealand and Chile has grown into a global student network uniting young people across the Pacific and beyond &mdash; supported by researchers, universities, and government agencies.</p>
+      <div class="bilingual">
+        OCEAN CONNECT US comenz&oacute; como una colaboraci&oacute;n entre el Liceo Juan Bautista Contardi en Punta Arenas, Chile y Rosmini College en Auckland, Nueva Zelanda &mdash; conectando a estudiantes a trav&eacute;s del Oc&eacute;ano Pac&iacute;fico para explorar el cambio clim&aacute;tico juntos.
+      </div>
+    </div>
+    <div>
+      <div class="timeline">
+        <div class="tl-item"><p class="tl-year">2022</p><p class="tl-text">Pilot launched: Rosmini College (Auckland) and Liceo Juan Bautista Contardi (Punta Arenas, Chile). 35 students, inspired by the Winds of Change project.</p></div>
+        <div class="tl-item"><p class="tl-year">May 2023</p><p class="tl-text">Expanded to include students from South Korea, Marshall Islands, and Hawaii for the first progress-sharing session.</p></div>
+        <div class="tl-item"><p class="tl-year">Nov&ndash;Dec 2023</p><p class="tl-text">First full TOTCUS Symposium. Peru, Washington State, India, Finland, and Singapore joined. All presentations archived in Sharing.</p></div>
+        <div class="tl-item"><p class="tl-year">2024</p><p class="tl-text">Over 250 students collaborating by August. Second Symposium held with a growing focus on action-oriented projects.</p></div>
+        <div class="tl-item"><p class="tl-year">2025</p><p class="tl-text">Germany, Vietnam, South Korea, and Philippines joined. Presented at the world Adaptation Futures Conference. East and West Symposiums hosted in November.</p></div>
+        <div class="tl-item"><p class="tl-year">2026 &rarr;</p><p class="tl-text">New partners, maturing projects, focus on Small Island Nations of the Pacific. Two symposiums planned.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Collaborators -->
+<section class="collabs" id="collaborators">
+  <p class="section-tag">// Global Network</p>
+  <h2 class="section-title">Collaborating Schools &amp; Regions</h2>
+  <p class="section-body">TOTCUS spans every continent. Click a region to explore the schools involved and the projects they are contributing.</p>
+  <div class="regions-grid">
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/oceania" target="_blank" class="region-card">
+      <div class="region-name">Oceania</div>
+      <div class="region-count">9 schools &mdash; NZ, Marshall Islands, Rapa Nui, Hawaii</div>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/south-america" target="_blank" class="region-card">
+      <div class="region-name">South America</div>
+      <div class="region-count">4 schools &mdash; Chile, Peru</div>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/north-central-america" target="_blank" class="region-card">
+      <div class="region-name">North &amp; Central America</div>
+      <div class="region-count">USA (Washington State), Canada, Mexico, Belize</div>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/east-asia" target="_blank" class="region-card">
+      <div class="region-name">East Asia</div>
+      <div class="region-count">South Korea &mdash; Hongik MS, Dongsung HS</div>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/south-and-se-asia" target="_blank" class="region-card">
+      <div class="region-name">South &amp; SE Asia</div>
+      <div class="region-count">India, Singapore (Raffles), Vietnam</div>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/europe" target="_blank" class="region-card">
+      <div class="region-name">Europe</div>
+      <div class="region-count">Finland &mdash; Kuoppanummen koulukeskus</div>
+    </a>
+    <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators/africa" target="_blank" class="region-card">
+      <div class="region-name">Africa</div>
+      <div class="region-count">Growing &mdash; contact us to join</div>
+    </a>
+    <a href="mailto:totcus.project@gmail.com" class="region-card" style="border-style:dashed;border-color:rgba(23,184,184,0.25);">
+      <div class="region-name" style="color:var(--aqua);">+ Add Your School</div>
+      <div class="region-count">Reach out to join the TOTCUS network</div>
+    </a>
+  </div>
+</section>
+
+<!-- Navigation Guide -->
+<section class="nav-guide">
+  <p class="section-tag">// Getting Started</p>
+  <h2 class="section-title">How to Navigate TOTCUS</h2>
+  <p class="section-body">Whether you're a student (ages 10&ndash;18) or a teacher, here's the quickest path to what you need.</p>
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">New? Start Here</div>
+      <p class="step-text">Read this Home page, then visit the <a href="https://sites.google.com/rosmini.school.nz/totcus/home/new-students-page" target="_blank">New Students Page</a> for a guided intro.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">See Who's Involved</div>
+      <p class="step-text">The <a href="https://sites.google.com/rosmini.school.nz/totcus/collaborators" target="_blank">Collaborators section</a> shows every school and group, organised by region.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Browse What's Been Shared</div>
+      <p class="step-text">The <a href="https://sites.google.com/rosmini.school.nz/totcus/sharing" target="_blank">Sharing section</a> has symposium presentations, classroom projects, and newsletters.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-title">Explore 100+ Knowledge Pages</div>
+      <p class="step-text">From atmosphere to indigenous knowledge &mdash; the <a href="https://sites.google.com/rosmini.school.nz/totcus/knowledge" target="_blank">Knowledge section</a> is a vast climate resource library.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-title">See Action Projects</div>
+      <p class="step-text">The <a href="https://sites.google.com/rosmini.school.nz/totcus/action" target="_blank">Action section</a> showcases real field research: water quality, microplastics, infrastructure, and more.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-title">Teachers &amp; Facilitators</div>
+      <p class="step-text">Visit the <a href="https://sites.google.com/rosmini.school.nz/totcus/home/teachers-page" target="_blank">Teachers Page</a> for lesson plans, schedules, and workshop resources.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div>
+    <div class="footer-brand">TOTCUS</div>
+    <p class="footer-text" style="margin-top:6px;">The Ocean That Connects Us &nbsp;&middot;&nbsp; Rosmini College, Auckland, New Zealand</p>
+    <p class="footer-text" style="margin-top:4px;">All images used for educational purposes. Please acknowledge TOTCUS materials properly if cited.</p>
+  </div>
+  <div style="text-align:center">
+    <p class="footer-text" style="margin-bottom:8px;">Interested in joining? Get in touch:</p>
+    <a href="mailto:totcus.project@gmail.com" class="footer-email">totcus.project@gmail.com</a>
+  </div>
+  <p class="footer-text" style="text-align:right;font-size:0.75rem">This site is constantly updated.<br>Some links may be in progress &mdash; bear with us.</p>
+</footer>
+
+</body>
+</html>
